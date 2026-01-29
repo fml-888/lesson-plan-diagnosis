@@ -231,9 +231,21 @@ def Main_interface():
         # 添加进度条可视化
         st.progress(int(total_score), text=f"教案综合评分：{total_score}/100分")
 
-        # 生成文字建议
-        suggestions = f"根据诊断结果{result}，给老师写3条具体修改建议（简洁明了）："
-        text_suggestions = model_invocation(suggestions)
+                # 生成文字建议（直接调用API，不强制JSON格式）
+        suggestions_prompt = f"根据诊断结果{result}，给老师写3条具体修改建议（简洁明了，用1. 2. 3.编号）："
+        
+        try:
+            # 直接调用API，不经过model_invocation的JSON解析
+            response = client.chat.completions.create(
+                model="glm-4",
+                messages=[{"role": "user", "content": suggestions_prompt}],
+                temperature=0.7,  # 建议部分可以稍微有创意一些
+                max_tokens=1000
+            )
+            text_suggestions = response.choices[0].message.content
+        except Exception as e:
+            text_suggestions = f"生成建议时出错：{str(e)}"
+        
         st.subheader("💡 老师修改建议")
         st.info(text_suggestions)  # 蓝色背景突出显示
 
@@ -242,4 +254,5 @@ def Main_interface():
 if __name__ == "__main__":
 
     Main_interface()  # 启动图形界面
+
 
