@@ -10,21 +10,53 @@ client = ZhipuAI(api_key=API_KEY)
 
 # ---------------------- 2. 大模型调用函数----------------------
 def model_invocation(prompt):
-    """用智谱GLM-4分析教案，返回解析后的字典"""
+    """用智谱GLM-4分析教案，返回解析后的字典，增强容错处理"""
     try:
         response = client.chat.completions.create(
-            model="glm-4",  # 中文能力强的模型
+            model="glm-4",
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.1,  # 低温度=结果稳定
+            temperature=0.1,
             max_tokens=2000
         )
         content = response.choices[0].message.content
-        return json.loads(content)  # 将JSON字符串转为字典
-    except json.JSONDecodeError:
-        return {"error": "大模型返回内容不是合法JSON格式"}
+        
+        # 保存原始响应以便调试
+        raw_content = content
+        
+        # 清洗1: 去除 Markdown 代码块标记 (```json ... ```)
+        content = content.strip()
+        if content.startswith("```"):
+            # 找到第一个换行符，去掉第一行(```json)
+            first_newline = content.find('\n')
+            if first_newline != -1:
+                content = content[first_newline+1:]
+            # 去掉末尾的 ```
+            if content.endswith("```"):
+                content = content[:-3].strip()
+        
+        # 清洗2: 查找第一个 { 和最后一个 } 之间的内容（防止开头有文字说明）
+        start_idx = content.find('{')
+        end_idx = content.rfind('}')
+        
+        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+            content = content[start_idx:end_idx+1]
+        
+        # 清洗3: 去除首尾空白
+        content = content.strip()
+        
+        # 尝试解析
+        return json.loads(content)
+        
+    except json.JSONDecodeError as e:
+        # 如果还是失败，返回包含原始内容的错误信息，方便调试
+        return {
+            "error": "大模型返回内容不是合法JSON格式", 
+            "解析错误": str(e),
+            "原始内容前200字": raw_content[:200] if 'raw_content' in locals() else "无",
+            "清洗后内容前200字": content[:200] if 'content' in locals() else "无"
+        }
     except Exception as e:
         return {"error": f"调用大模型失败：{str(e)}"}
-
 # ---------------------- 3. 教案检测核心功能----------------------
 def test_lesson_plan(text):
     """调用大模型检测3个维度"""
@@ -210,3 +242,4 @@ def Main_interface():
 if __name__ == "__main__":
 
     Main_interface()  # 启动图形界面
+
