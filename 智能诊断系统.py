@@ -16,8 +16,7 @@ def model_invocation(prompt):
             model="glm-4",  # 中文能力强的模型
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1,  # 低温度=结果稳定
-            max_tokens=2000,
-            response_format={"type": "json_object"}  # 强制返回JSON格式
+            max_tokens=2000
         )
         content = response.choices[0].message.content
         return json.loads(content)  # 将JSON字符串转为字典
@@ -209,4 +208,5 @@ def Main_interface():
 
 # ---------------------- 运行界面 ----------------------
 if __name__ == "__main__":
+
     Main_interface()  # 启动图形界面
