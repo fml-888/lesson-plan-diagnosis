@@ -1,2 +1,6 @@
-streamlit
-zhipuai
+streamlit==1.28.0
+zhipuai==2.0.1
+sniffio
+annotated-types
+typing-extensions
+pydantic
