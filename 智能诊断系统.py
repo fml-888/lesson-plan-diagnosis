@@ -265,18 +265,35 @@ def test_lesson_plan(text):
 教案文本：{text}
 """
     return model_invocation(prompt)
-
 def score_lesson_plan(diagnosis_result):
     """按权重计算三个维度的总分"""
     try:
-        # 安全获取分数值（避免KeyError）
-        section_score = diagnosis_result.get("环节完整性", {}).get("score", 0)
-        time_score = diagnosis_result.get("时间分配", {}).get("score", 0)
-        literacy_score = diagnosis_result.get("素养匹配", {}).get("avg_score", 0)  # 修正拼写：socre -> score
-
-        # 加权计算：环节30% + 时间30% + 素养40%
+        # 安全获取分数值，并转换为数字（处理字符串情况）
+        def safe_get_score(data, *keys, default=0):
+            """安全获取嵌套字典中的分数，并转换为float"""
+            try:
+                for key in keys:
+                    data = data.get(key, {})
+                # 如果是字符串，尝试提取数字
+                if isinstance(data, str):
+                    # 提取字符串中的第一个数字
+                    import re
+                    numbers = re.findall(r'\d+\.?\d*', data)
+                    if numbers:
+                        return float(numbers[0])
+                    return default
+                # 如果是数字，直接返回
+                return float(data) if data is not None else default
+            except:
+                return default
+        
+        section_score = safe_get_score(diagnosis_result, "环节完整性", "score")
+        time_score = safe_get_score(diagnosis_result, "时间分配", "score")
+        literacy_score = safe_get_score(diagnosis_result, "素养匹配", "avg_score")
+        
+        # 加权计算
         total_score = section_score * 0.3 + time_score * 0.3 + literacy_score * 0.4
-        return round(total_score, 2)  # 保留2位小数
+        return round(total_score, 2)
     except Exception as e:
         st.error(f"评分计算失败: {str(e)}")
         return 0.0
@@ -374,6 +391,7 @@ def Main_interface():
 if __name__ == "__main__":
 
     Main_interface()  # 启动图形界面
+
 
 
 
