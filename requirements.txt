@@ -1,9 +1,5 @@
+# 核心依赖（保留你需要的版本）
 streamlit==1.28.0
 zhipuai==2.0.1
-sniffio
-annotated-types
-typing-extensions
-pydantic
-pillow==10.3.0
-streamlit
-# 其他依赖...
+# 升级Pillow，自动适配Python版本
+pillow>=10.4.0
