@@ -4,3 +4,4 @@ sniffio
 annotated-types
 typing-extensions
 pydantic
+pillow>=10.0.0 
