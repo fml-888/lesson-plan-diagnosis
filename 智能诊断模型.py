@@ -295,8 +295,8 @@ def score_lesson_plan(diagnosis_result):
 
 # ---------------------- 4. 图形化界面（上传+显示结果）----------------------
 def Main_interface():
-    st.set_page_config(page_title="智能诊断系统", layout="wide")
-    st.title("📚 初中信息科技教案智能诊断系统")
+    st.set_page_config(page_title="智能诊断模型", layout="wide")
+    st.title("📚 初中信息科技教案智能诊断模型")
     st.write("上传TXT教案文件，自动检测规范性并生成建议！")
 
     File_Upload = st.file_uploader("选择教案文件（TXT格式）", type=["txt"], key="uploader")
